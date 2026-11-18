@@ -167,6 +167,8 @@ export interface WorkbenchTab {
  * workbench has no shortcut there.
  */
 export interface WorkbenchAppCenter {
+  /** Explicit resource identity for a single Project-wide shortcut. */
+  projectKey?: string;
   show: boolean;
   /** At most 60 characters; the first tab's title, else the package name, when absent. */
   title?: string;
@@ -184,6 +186,7 @@ export interface WorkbenchAppCenter {
 
 /** One tile of the App Center: a workbench whose manifest asks to be shown. */
 export interface AppCenterShortcut {
+  projectKey?: string;
   agentId: string;
   agentName: string;
   workbenchId: string;

@@ -70,6 +70,7 @@ import type {
 import { ScheduleSessionCreator, ScheduleTaskRunner } from "../runtime/scheduler.js";
 import {
   agentShortcuts,
+  projectShortcuts,
   appCenterIconRef,
   AppCenterManifestInvalid,
   readAppCenterIcon,
@@ -621,7 +622,7 @@ export class WorkbenchService implements Workbenches {
         )),
       );
     }
-    return out;
+    return projectShortcuts(out);
   }
 
   async appCenterIcon(

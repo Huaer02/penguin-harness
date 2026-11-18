@@ -1,3 +1,4 @@
+import { knowledgeTools } from "./knowledge-tools.js";
 /**
  * Active Session runtime.
  *
@@ -3079,6 +3080,7 @@ export class SessionsModule {
     const modelScopeAuth = this.modelScopeAuth;
 
     const assembly: AgentAssembly = {
+      tools: (identity) => knowledgeTools(config.root, identity),
       // ModelScope's group key is an access token the bridge refreshes, so each request reads
       // it fresh. A model with a key of its own keeps that key (undefined = the credential
       // the client was built with stands); the rest use the group key, refreshed first, and a

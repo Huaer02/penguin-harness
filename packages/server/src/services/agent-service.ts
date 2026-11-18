@@ -13,6 +13,7 @@
  * write name/description/author into system_config.yaml (parseDocument preserves the
  * template's comments).
  */
+import { removeKnowledgeAgent } from "./knowledge-lifecycle.js";
 import fs from "node:fs/promises";
 import type { Dirent } from "node:fs";
 import path from "node:path";
@@ -551,6 +552,7 @@ export class AgentService implements AgentLifecycle {
   async deleteAgent(projectId: string, agentId: string): Promise<AgentDeletionInfo> {
     refuseBuiltinDeletion(agentId);
     const deletionId = await this.moveAside(projectId, agentId);
+    removeKnowledgeAgent(this.root, projectId, agentId);
     this.agents.delete(projectId, agentId);
     if (deletionId === null) {
       // The folder was already gone: there is nothing to remove.

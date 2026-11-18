@@ -116,7 +116,12 @@ async function checkDeclaration(
   tabs: readonly ManifestTab[],
 ): Promise<Checked> {
   if (!isRecord(value)) return { problem: 'it must be an object such as { "show": true }' };
-  const { show, title, titleZh, icon, tab } = value;
+  const { show, title, titleZh, icon, tab, projectKey } = value;
+  if (
+    projectKey !== undefined &&
+    (typeof projectKey !== "string" || !/^[a-z][a-z0-9.-]{0,99}$/.test(projectKey))
+  )
+    return { problem: "invalid projectKey" };
   if (typeof show !== "boolean") return { problem: '"show" must be true or false' };
   const titled = titleProblem("title", title) ?? titleProblem("titleZh", titleZh);
   if (titled !== null) return { problem: titled };
@@ -134,6 +139,7 @@ async function checkDeclaration(
   return {
     appCenter: {
       show,
+      ...(typeof projectKey === "string" ? { projectKey } : {}),
       ...(typeof title === "string" ? { title } : {}),
       ...(typeof titleZh === "string" ? { titleZh } : {}),
       ...(typeof icon === "string" ? { icon } : {}),
@@ -242,6 +248,7 @@ function shortcutOf(
   const tab = appCenter.tab ?? first?.key;
   const page = `/app/${segment(projectId)}/${segment(agent.agentId)}/${segment(workbenchId)}`;
   return {
+    ...(appCenter.projectKey ? { projectKey: appCenter.projectKey } : {}),
     agentId: agent.agentId,
     agentName: agent.agentName,
     workbenchId,
@@ -313,4 +320,20 @@ export async function writeAppCenterShow(dir: string, show: boolean): Promise<vo
     await fs.rm(staged, { force: true }).catch(() => undefined);
     throw err;
   }
+}
+
+/** Only explicit shared-resource declarations coalesce; ordinary same-name apps stay distinct. */
+export function projectShortcuts(shortcuts: AppCenterShortcut[]): AppCenterShortcut[] {
+  const shared = new Map<string, AppCenterShortcut>();
+  const out: AppCenterShortcut[] = [];
+  for (const item of shortcuts) {
+    if (!item.projectKey) {
+      out.push(item);
+      continue;
+    }
+    const old = shared.get(item.projectKey);
+    if (!old || (old.build !== "ready" && item.build === "ready"))
+      shared.set(item.projectKey, item);
+  }
+  return [...out, ...shared.values()];
 }

@@ -1,3 +1,4 @@
+import type { BuiltinTool } from "./environment/tools/types.js";
 /**
  * Agent and the `createAgent` entry point.
  *
@@ -181,6 +182,8 @@ export interface CreateAgentOptions {
  * in its config; this is what the HOSTING PROCESS adds on top, for every Agent.
  */
 export interface AgentAssembly {
+  /** Host-defined tools bound to trusted Session coordinates, outside model arguments. */
+  tools?(context: ControlEnvContext): readonly BuiltinTool[];
   /**
    * Sections appended to the assembled system prompt, in order, each as `# <title>` +
    * text. Empty = the prompt is exactly the Agent's own.
@@ -1405,6 +1408,12 @@ export class Agent {
     // child Agent loads **its own** vault via createAgent rather than inheriting the
     // parent's.
     const environment = new Environment({
+      hostTools:
+        this.assembly?.tools?.({
+          projectId: this.state.projectId,
+          agentId: this.state.agentId,
+          sessionId,
+        }) ?? [],
       workspaceDir,
       toolConfig: initial.toolConfig,
       // The Session's generic scratchpad root; Environment derives its truncated-tool-output

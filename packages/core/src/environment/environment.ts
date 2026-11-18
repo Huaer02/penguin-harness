@@ -171,7 +171,9 @@ export class Environment implements EnvironmentInterface {
   /** The file tools' sandboxed helper (see tools/fs-worker.ts): started at the first confined file operation, kept for the Session, restarted when the confiner's answer changes. */
   private readonly fsHost = new SandboxedFsHost();
 
-  constructor(config: EnvironmentConfig) {
+  private readonly hostTools: readonly BuiltinTool[];
+  constructor(config: EnvironmentConfig & { hostTools?: readonly BuiltinTool[] }) {
+    this.hostTools = config.hostTools ?? [];
     this.workspaceDir = config.workspaceDir;
     this.truncatedToolOutputArchive = config.sessionScratchpadDir
       ? new TruncatedToolOutputArchive({
@@ -233,6 +235,11 @@ export class Environment implements EnvironmentInterface {
     for (const def of toolConfig.customTools) {
       const factory = BUILTIN_TOOL_FACTORIES[def.name];
       if (factory) this.tools.set(def.name, factory(def, this.services));
+    }
+    for (const tool of this.hostTools) {
+      if (this.tools.has(tool.name) || tool.name.startsWith("mcp__"))
+        throw new Error(`Host tool name collision: ${tool.name}`);
+      this.tools.set(tool.name, tool);
     }
   }
 
@@ -589,6 +596,13 @@ export class Environment implements EnvironmentInterface {
         description: tool.description,
         ...(tool.parameters !== undefined ? { parameters: tool.parameters } : {}),
       }));
+    builtin.push(
+      ...this.hostTools.map((tool) => ({
+        name: tool.name,
+        description: tool.definition.description,
+        ...(tool.definition.parameters ? { parameters: tool.definition.parameters } : {}),
+      })),
+    );
     if (!this.mcp) return builtin;
     return [...builtin, ...(await this.mcp.listTools())];
   }
@@ -606,6 +620,7 @@ export class Environment implements EnvironmentInterface {
   /** Looks up a tool's permission level (for the frontend's permission-mode decisions); returns undefined for an unknown tool. MCP tools answer from their entry's `permission` after discovery, or from their own `readOnlyHint` annotation when the entry sets none. */
   toolPermission(name: string): ToolPermission | undefined {
     return (
+      this.hostTools.find((t) => t.name === name)?.definition.permission ??
       this.toolConfig.customTools.find((t) => t.name === name)?.permission ??
       this.mcp?.toolPermission(name)
     );

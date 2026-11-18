@@ -1,3 +1,4 @@
+import { knowledgeRoutes } from "./knowledge.js";
 /**
  * Plugins: the library this build ships, the registry a deployment lists, and what an
  * Agent has installed.
@@ -68,7 +69,7 @@ import type { AppEnv } from "../../auth/middleware.js";
 import type { ServerConfig } from "../../config.js";
 import type { Config, Hmr } from "../../hmr/capabilities.js";
 import type { AgentConfig } from "../../mechanisms/agents.js";
-import type { Access } from "../../mechanisms/projects.js";
+import type { Access, AgentIndex } from "../../mechanisms/projects.js";
 import type { Workbenches } from "../../mechanisms/workbenches.js";
 import type { Sessions as ManagerIface } from "../../runtime/session-manager.js";
 import { Bind, Component, Use } from "@prismshadow/penguin-core/kernel";
@@ -338,6 +339,12 @@ export function agentMcpServersRoutes(deps: PluginsRouteDeps): Hono<AppEnv> {
 @Component({
   contributes: {
     "HttpModule.routes": [
+      {
+        id: "PluginRoutes.knowledge",
+        prefix: "/api/projects/:projectId/knowledge-bases",
+        auth: "user",
+        order: 221,
+      },
       { id: "PluginRoutes.library", prefix: "/api/plugins", auth: "user", order: 70 },
       {
         id: "PluginRoutes.agent-plugins",
@@ -361,6 +368,8 @@ export function agentMcpServersRoutes(deps: PluginsRouteDeps): Hono<AppEnv> {
   },
 })
 export class PluginRoutes {
+  @Use() private readonly agents!: AgentIndex;
+  @Bind("PluginRoutes.knowledge") knowledgeRoutes!: Hono<AppEnv>;
   @Use() private readonly config!: Config;
   @Use() private readonly access!: Access;
   @Use() private readonly agentConfig!: AgentConfig;
@@ -380,6 +389,11 @@ export class PluginRoutes {
       library: this.library,
       workbenches: this.workbenches,
     };
+    this.knowledgeRoutes = knowledgeRoutes({
+      root: this.config.root,
+      access: this.access,
+      agents: this.agents,
+    });
     this.libraryRoutes = pluginLibraryRoutes(this.library);
     this.pluginRoutes = agentPluginsRoutes(deps);
     this.hookRoutes = agentHooksRoutes(deps);

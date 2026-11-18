@@ -1,0 +1,44 @@
+{
+  "name": "@penguinharness/knowledge-base",
+  "version": "0.2.18",
+  "description": "Project-owned knowledge libraries with agent connections, versioned citations, hybrid retrieval and human-reviewed task findings.",
+  "keywords": [
+    "penguin-plugin",
+    "penguinharness",
+    "skills"
+  ],
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Huaer02",
+    "url": "https://github.com/Huaer02"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prism-Shadow/penguin-harness.git",
+    "directory": "plugins/knowledge-base"
+  },
+  "files": [
+    "icon.svg",
+    "skills",
+    "hooks",
+    "workbenches",
+    "mcp/lib",
+    "service",
+    "ifaces.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "node --test test/*.node-test.mjs && vitest run",
+    "build": "node ../../scripts/gen-ifaces.mjs --project tsconfig.json --out ifaces.json"
+  },
+  "devDependencies": {
+    "@prismshadow/penguin-core": "workspace:*",
+    "@prismshadow/skills": "workspace:*",
+    "vitest": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
