@@ -148,10 +148,10 @@ export function AppTile({
   const failed = shortcut.build === "failed";
   const state = building ? S.appCenter.building : failed ? S.appCenter.broken : null;
   const tip = building
-    ? S.appCenter.buildingTip(title, shortcut.agentName)
+    ? S.appCenter.buildingTip(title, shortcut.projectKey ? "Project" : shortcut.agentName)
     : failed
-      ? S.appCenter.failedTip(title, shortcut.agentName)
-      : S.appCenter.tileTip(title, shortcut.agentName);
+      ? S.appCenter.failedTip(title, shortcut.projectKey ? "Project" : shortcut.agentName)
+      : S.appCenter.tileTip(title, shortcut.projectKey ? "Project" : shortcut.agentName);
   return (
     <li
       className="relative"
@@ -167,7 +167,11 @@ export function AppTile({
             ref={target.ref}
             {...target.props}
             type="button"
-            aria-label={S.appCenter.tileName(title, shortcut.agentName, state)}
+            aria-label={S.appCenter.tileName(
+              title,
+              shortcut.projectKey ? "Project" : shortcut.agentName,
+              state,
+            )}
             aria-disabled={building || undefined}
             data-tooltip={tip}
             data-tooltip-extra

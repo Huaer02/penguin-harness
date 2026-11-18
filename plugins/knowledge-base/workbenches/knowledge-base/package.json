@@ -1,0 +1,44 @@
+{
+  "name": "knowledge-base-workbench",
+  "version": "1.0.0",
+  "type": "module",
+  "penguin": {
+    "version": "2026.11.17.5",
+    "appCenter": {
+      "show": true,
+      "projectKey": "knowledge-base",
+      "title": "Project Knowledge",
+      "titleZh": "项目知识库",
+      "icon": "ui/icon.svg"
+    },
+    "modules": [
+      {
+        "name": "Workbench",
+        "requires": {
+          "host": {
+            "iface": "@prismshadow/penguin-server#WorkbenchHost",
+            "from": "Host"
+          }
+        },
+        "provides": {
+          "main": "@prismshadow/penguin-server#WorkbenchMain"
+        },
+        "contributes": {
+          "WebModule.sessionTabs": [
+            {
+              "id": "knowledge.main",
+              "key": "knowledge",
+              "title": "Knowledge Base",
+              "titleZh": "知识库",
+              "renderer": {
+                "iframe": {
+                  "src": "ui/index.html"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

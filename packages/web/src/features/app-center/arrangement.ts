@@ -19,8 +19,14 @@ import type {
 } from "@prismshadow/penguin-server/api";
 
 /** An app's key in a layout: `<agentId>/<workbenchId>`. */
-export function appKeyOf(shortcut: { agentId: string; workbenchId: string }): string {
-  return `${shortcut.agentId}/${shortcut.workbenchId}`;
+export function appKeyOf(shortcut: {
+  agentId: string;
+  workbenchId: string;
+  projectKey?: string;
+}): string {
+  return shortcut.projectKey
+    ? `project/${shortcut.projectKey}`
+    : `${shortcut.agentId}/${shortcut.workbenchId}`;
 }
 
 export interface GridApp {
